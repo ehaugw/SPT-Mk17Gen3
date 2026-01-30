@@ -1,0 +1,20 @@
+{
+    "manifest": [
+        {
+            "key": "SCAR_H_GEN_3/scar_h_gen_3_lower.bundle",
+            "dependencyKeys": [
+                "shaders",
+                "cubemaps",
+                "assets/commonassets/physics/physicsmaterials.bundle"
+            ]
+        },
+        {
+            "key": "SCAR_H_GEN_3/scar_h_gen_3_upper.bundle",
+            "dependencyKeys": [
+                "shaders",
+                "cubemaps",
+                "assets/commonassets/physics/physicsmaterials.bundle"
+            ]
+        }
+    ]
+}
