@@ -1,0 +1,6 @@
+*.blend1
+Textures/Gen3Lower
+Textures/Gen3Upper
+Dumps
+*autosave*.spp
+export/
