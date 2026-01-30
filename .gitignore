@@ -4,3 +4,4 @@ Textures/Gen3Upper
 Dumps
 *autosave*.spp
 export/
+Makefile.secret
