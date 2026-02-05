@@ -40,9 +40,30 @@ const tradeScarHIrsGen3FDE = "697b9885bbd5615d7c8a6742";
 const therapist = "54cb57776803fa99248b456e";
 const mechanic = "5a7c2eca46aef81a7ca2145d";
 const peacekeeper = "5935c25fb3acc3127c3d8cd9";
+//
+// MAGAZINES
+const scarHMag = "618168dc8004cc50514c34fc";
+const scarHMagFDE = "6183d53f1cb55961fa0fdcda";
+const ar10Lancer = "65293c38fc460e50a509cb25";
+
+// RAILS
+const scarPMMRail = "66ffc72082d36dec82030c1f";
+const scarPMMRailFDE = "66ffc903fe9b382596065304";
+const scarPMMRailExtension = "66ffe2fbab3336cc0106382b";
+const scarPMMRailExtensionFDE = "66ffe5edfe9b38259606530d";
+const scarBottomRail = "61816df1d3a39d50044c139e";
+const scarPwsSrxRailExtension = "61965d9058ef8c428c287e0d";
+const scarVltorCasv = "66ffe811f5d758d71101e89a";
+const scarVltorCasvFDE = "66ffea06132225f0fe061394";
+const scarMrex = "619666f4af1f5202c57a952d";
+const scarMrexFDE = "66ffc6ceb7ff397142017c3a";
+const scarVltorCasvExtension = "66ffea456be19fd81e0ef742";
+const scarVltorCasvExtensionFDE = "66ffeab4ab3336cc01063833";
 
 class Mod implements IPostDBLoadMod
 {    
+    tables: IDatabaseTables;
+
     public postDBLoad(container: DependencyContainer): void
     {
         // const logger = container.resolve<ILogger>("WinstonLogger");
@@ -50,13 +71,35 @@ class Mod implements IPostDBLoadMod
         // get database from the server
         const customItem = container.resolve<CustomItemService>("CustomItemService");
         const databaseServer = container.resolve<DatabaseServer>("DatabaseServer");
-        const tables: IDatabaseTables = databaseServer.getTables();
+        this.tables = databaseServer.getTables();
 
-        this.createScarGen3Upper(customItem, tables);
-        this.createScarGen3Lower(customItem, tables);
+        const ergo_budget = this.nerfX17();
+        this.createScarGen3Upper(customItem);
+        this.createScarGen3Lower(customItem, ergo_budget);
     }
 
-    public createScarGen3Upper(customItem, tables): void {
+    public nerfX17(): number {
+        // 2 Ergo nerf to X17
+        // Early game buff
+        const nerf_from_mag = this.getErgo(ar10Lancer) - this.getErgo(scarHMag);
+        this.moveErgo(
+            [scarPMMRailExtension, scarPMMRailExtensionFDE, scarPwsSrxRailExtension, scarMrex, scarMrexFDE, scarVltorCasv, scarVltorCasvFDE],
+            [scarHMag, scarHMagFDE],
+            nerf_from_mag,
+        );
+
+        // 2 Ergo nerf to X17
+        // Early game buff
+        const nerf_from_lower = this.getErgo(x17) - this.getErgo(scarH);
+        this.moveErgo(
+            [scarPMMRailExtension, scarPMMRailExtensionFDE, scarPwsSrxRailExtension, scarMrex, scarMrexFDE, scarVltorCasvExtension, scarVltorCasvExtensionFDE],
+            [scarH, scarHFDE, scarL, scarLFDE],
+            nerf_from_lower,
+        );
+        return nerf_from_mag + nerf_from_lower;
+    }
+
+    public createScarGen3Upper(customItem): void {
         // CREATE ITEM
         const gen_3_upper_creator: NewItemFromCloneDetails = {
             itemTplToClone: scarHUpperFDE,
@@ -85,17 +128,16 @@ class Mod implements IPostDBLoadMod
         customItem.createItemFromClone(gen_3_upper_creator);
 
         // MAKE ELIGIBLE FOR SCAR
-        [scarH, scarHFDE, x17].forEach(function (value: string) {
-            tables.templates.items[value]._props.Slots[2]._props.filters[0].Filter.push(scarHUpperGen3FDE);
+        [scarH, scarHFDE, x17].forEach((value: string) => {
+            this.tables.templates.items[value]._props.Slots[2]._props.filters[0].Filter.push(scarHUpperGen3FDE);
         });
 
-        this.addErgo(tables, scarHUpperGen3FDE, -1)
-        this.addRecoil(tables, scarHUpperGen3FDE, -4)
-        this.setWeight(tables, scarHUpperGen3FDE, 0.325)
-
+        this.addErgo(scarHUpperGen3FDE, this.getErgo(scarVltorCasv) + this.getErgo(scarVltorCasvExtension));
+        this.addRecoil(scarHUpperGen3FDE, this.getRecoil(scarVltorCasv) + this.getRecoil(scarVltorCasvExtension));
+        this.setWeight(scarHUpperGen3FDE, 0.325)
 
         // TRADER STUFF
-        const traders = tables.traders[peacekeeper];
+        const traders = this.tables.traders[peacekeeper];
         traders.assort.items.push({
             "_id": tradeScarHUpperGen3FDE,
             "_tpl": scarHUpperGen3FDE,
@@ -118,7 +160,7 @@ class Mod implements IPostDBLoadMod
         traders.assort.loyal_level_items[tradeScarHUpperGen3FDE] = 4;
     }
 
-    public createScarGen3Lower(customItem, tables): void {
+    public createScarGen3Lower(customItem, ergo_budget: number): void {
         // CREATE ITEM
         const item_creator: NewItemFromCloneDetails = {
             itemTplToClone: scarHMrexFDE,
@@ -147,18 +189,18 @@ class Mod implements IPostDBLoadMod
         customItem.createItemFromClone(item_creator);
 
         // MAKE ELIGIBLE FOR SCAR
-        [scarHUpperGen3FDE].forEach(function (value: string) {
-            tables.templates.items[value]._props.Slots[5]._props.filters[0].Filter = [scarHIrsGen3FDE];
+        [scarHUpperGen3FDE].forEach((value: string) => {
+            this.tables.templates.items[value]._props.Slots[5]._props.filters[0].Filter = [scarHIrsGen3FDE];
         });
-        tables.templates.items[scarHUpperGen3FDE]._props.ConflictingItems.push(scarSightFront);
+        this.tables.templates.items[scarHUpperGen3FDE]._props.ConflictingItems.push(scarSightFront);
 
-
-        this.setErgo(tables, scarHIrsGen3FDE, 2)
-        this.setRecoil(tables, scarHIrsGen3FDE, 0)
-        this.setWeight(tables, scarHUpperGen3FDE, 0.175)
+        // 4 is from the X17 nerf in Weapon Balancing
+        this.setErgo(scarHIrsGen3FDE, ergo_budget);
+        this.setRecoil(scarHIrsGen3FDE, 0);
+        this.setWeight(scarHUpperGen3FDE, 0.175)
 
         // TRADER STUFF
-        const traders = tables.traders[peacekeeper];
+        const traders = this.tables.traders[peacekeeper];
         traders.assort.items.push({
             "_id": tradeScarHIrsGen3FDE,
             "_tpl": scarHIrsGen3FDE,
@@ -181,33 +223,50 @@ class Mod implements IPostDBLoadMod
         traders.assort.loyal_level_items[tradeScarHIrsGen3FDE] = 4;
     }
 
-    public setRecoil(tables, item, value): void {
-        tables.templates.items[item]._props.Recoil = value;
+    public moveRecoil(from_list: string[], to_list: string[], value: number): void {
+        to_list.forEach((item) => {
+            this.addRecoil(item, -value);
+        });
+        from_list.forEach((item) => {
+            this.addRecoil(item, -value);
+        });
+    }
+    public moveErgo(from_list: string[], to_list: string[], value: number): void {
+        to_list.forEach((item) => {
+            this.addErgo(item, -value);
+        });
+        from_list.forEach((item) => {
+            this.addErgo(item, -value);
+        });
     }
 
-    public getRecoil(tables, item) {
-        return tables.templates.items[item]._props.Recoil;
+    public setRecoil(item, value): void {
+        this.tables.templates.items[item]._props.Recoil = value;
     }
 
-    public addRecoil(tables, item, value): void {
-
-        this.setRecoil(tables, item, this.getRecoil(tables, item) + value)
+    public getRecoil(item) {
+        return this.tables.templates.items[item]._props.Recoil;
     }
 
-    public setErgo(tables, item, value): void {
-        tables.templates.items[item]._props.Ergonomics = value;
+    public addRecoil(item, value): void {
+
+        this.setRecoil(item, this.getRecoil(item) + value)
     }
 
-    public getErgo(tables, item) {
-        return tables.templates.items[item]._props.Ergonomics;
+    public setErgo(item, value): void {
+        this.tables.templates.items[item]._props.Ergonomics = value;
     }
 
-    public addErgo(tables, item, value): void {
-        this.setErgo(tables, item, this.getErgo(tables, item) + value)
+    public getErgo(item) {
+        return this.tables.templates.items[item]._props.Ergonomics;
     }
 
-    public setWeight(tables, item, value): void {
-        tables.templates.items[item]._props.Weight = value;
+    public addErgo(item, value): void {
+        this.setErgo(item, this.getErgo(item) + value)
+    }
+
+    public setWeight(item, value): void {
+        this.tables.templates.items[item]._props.Weight = value;
     }
 }
 
