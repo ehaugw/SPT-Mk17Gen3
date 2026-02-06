@@ -61,12 +61,13 @@ const scarVltorCasvExtension = "66ffea456be19fd81e0ef742";
 const scarVltorCasvExtensionFDE = "66ffeab4ab3336cc01063833";
 
 class Mod implements IPostDBLoadMod
-{    
+{
     tables: IDatabaseTables;
+    logger: ILogger;
 
     public postDBLoad(container: DependencyContainer): void
     {
-        // const logger = container.resolve<ILogger>("WinstonLogger");
+        this.logger = container.resolve<ILogger>("WinstonLogger");
 
         // get database from the server
         const customItem = container.resolve<CustomItemService>("CustomItemService");
@@ -99,7 +100,63 @@ class Mod implements IPostDBLoadMod
         return nerf_from_mag + nerf_from_lower;
     }
 
-    public createScarGen3Upper(customItem): void {
+    public deleteSlotWithTransformName(item_name: string, transform_name: string): void {
+        const item = this.tables.templates.items[item_name];
+        if (item?._props?.Slots == null) {
+            return;
+        }
+        const remove_slot = this.getSlotWithTransformName(item_name, transform_name);
+        // if (remove_slot == null) {
+        //     this.logger.info("no remove slot found")
+        //     return;
+        // }
+
+        const new_slots: any = [];
+
+        item._props.Slots.forEach((slot: any) => {
+            if (remove_slot != slot) {
+                new_slots.push(slot);
+            }
+        });
+
+        item._props.Slots = new_slots;
+    }
+
+    public inheritSlotFromTransformName(item_name: string, to_transform_name: string, from_transform_name: string): void {
+        var to_slot = this.getSlotWithTransformName(item_name, to_transform_name);
+        var from_slot = this.getSlotWithTransformName(item_name, from_transform_name);
+
+        // if (to_slot == null || from_slot == null) {
+        //     this.logger.info("could not find to or from slot");
+        //     return
+        // }
+        to_slot._props = from_slot._props;
+        to_slot._mergeSlotWithChildren = from_slot._mergeSlotWithChildren;
+        to_slot._required = from_slot._required;
+    }
+
+    public renameSlotTransformName(item_name: string, old_transform_name: string, new_transform_name: string): void {
+        const slot = this.getSlotWithTransformName(item_name, old_transform_name);
+        slot._name = new_transform_name;
+    }
+
+    public getSlotWithTransformName(item_name: string, transform_name: string): any {
+        const item = this.tables.templates.items[item_name];
+        // this.logger.info("looking for " + transform_name);
+
+        const slot = item?._props?.Slots?.find((slot: any) => {
+            // this.logger.info(slot);
+            return slot._name === transform_name;
+        });
+
+        if (!slot) {
+            this.logger.info("returned null Slot for " + transform_name);
+        }
+
+        return slot ?? null;
+    }
+
+    public createScarGen3Upper(customItem: any): void {
         // CREATE ITEM
         const gen_3_upper_creator: NewItemFromCloneDetails = {
             itemTplToClone: scarHUpperFDE,
@@ -134,7 +191,11 @@ class Mod implements IPostDBLoadMod
 
         this.addErgo(scarHUpperGen3FDE, this.getErgo(scarVltorCasv) + this.getErgo(scarVltorCasvExtension));
         this.addRecoil(scarHUpperGen3FDE, this.getRecoil(scarVltorCasv) + this.getRecoil(scarVltorCasvExtension));
-        this.setWeight(scarHUpperGen3FDE, 0.325)
+        this.setWeight(scarHUpperGen3FDE, 0.325);
+
+        // used to be side rails, now it is moved in unity and holds more tactical equipment
+        this.renameSlotTransformName(scarHUpperGen3FDE, "mod_mount_001", "mod_tactical_001");
+        this.inheritSlotFromTransformName(scarHUpperGen3FDE, "mod_tactical_001", "mod_tactical_000");
 
         // TRADER STUFF
         const traders = this.tables.traders[peacekeeper];
@@ -198,6 +259,8 @@ class Mod implements IPostDBLoadMod
         this.setErgo(scarHIrsGen3FDE, ergo_budget);
         this.setRecoil(scarHIrsGen3FDE, 0);
         this.setWeight(scarHUpperGen3FDE, 0.175)
+
+        this.deleteSlotWithTransformName(scarHIrsGen3FDE, "mod_tactical_000");
 
         // TRADER STUFF
         const traders = this.tables.traders[peacekeeper];
