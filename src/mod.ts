@@ -10,6 +10,7 @@ import { NewItemFromCloneDetails } from "@spt/models/spt/mod/NewItemDetails";
 // GENERICS
 const genericReceiver = "55818a304bdc2db5418b457d";
 const roubles = "5449016a4bdc2d6f028b456f";
+const dollars = "5696686a4bdc2da3298b456a";
 const genericMount = "55818b224bdc2dde698b456f";
 
 // NEW CONTENT
@@ -190,7 +191,7 @@ class Mod implements IPostDBLoadMod
         });
 
         this.addErgo(scarHUpperGen3FDE, this.getErgo(scarVltorCasv) + this.getErgo(scarVltorCasvExtension));
-        this.addRecoil(scarHUpperGen3FDE, this.getRecoil(scarVltorCasv) + this.getRecoil(scarVltorCasvExtension));
+        this.addRecoil(scarHUpperGen3FDE, this.getRecoil(scarVltorCasv) + this.getRecoil(scarVltorCasvExtension) - 4);
         this.setWeight(scarHUpperGen3FDE, 0.325);
 
         // used to be side rails, now it is moved in unity and holds more tactical equipment
@@ -213,8 +214,8 @@ class Mod implements IPostDBLoadMod
         traders.assort.barter_scheme[tradeScarHUpperGen3FDE] = [
             [
                 {
-                    "count": 89,
-                    "_tpl": roubles
+                    "count": 208,
+                    "_tpl": dollars
                 }
             ]
         ];
@@ -278,8 +279,8 @@ class Mod implements IPostDBLoadMod
         traders.assort.barter_scheme[tradeScarHIrsGen3FDE] = [
             [
                 {
-                    "count": 54,
-                    "_tpl": roubles
+                    "count": 89,
+                    "_tpl": dollars
                 }
             ]
         ];
