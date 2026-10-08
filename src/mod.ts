@@ -8,12 +8,14 @@ import { CustomItemService } from "@spt/services/mod/CustomItemService";
 import { NewItemFromCloneDetails } from "@spt/models/spt/mod/NewItemDetails";
 
 // GENERICS
+const genericAssaultRifle = "5447b5f14bdc2d61278b4567";
 const genericReceiver = "55818a304bdc2db5418b457d";
 const roubles = "5449016a4bdc2d6f028b456f";
 const dollars = "5696686a4bdc2da3298b456a";
 const genericMount = "55818b224bdc2dde698b456f";
 
 // NEW CONTENT
+const scarHLowerGen3FDE = "6ac7ab46d2ae52b0354b074f"
 const scarHUpperGen3FDE = "6978c12f547952b888405528"
 const scarHIrsGen3FDE = "697b97ea048ba4bb3334697f";
 
@@ -34,6 +36,7 @@ const scarL = "6184055050224f204c1da540";
 const scarLFDE = "618428466ef05c2ce828f218";
 
 // TRADES
+const tradeScarHLowerGen3FDE = "6ac7afd672c3ff20c5c4838b";
 const tradeScarHUpperGen3FDE = "6979fbfe3121edb6d765bb05";
 const tradeScarHIrsGen3FDE = "697b9885bbd5615d7c8a6742";
 
@@ -77,7 +80,8 @@ class Mod implements IPostDBLoadMod
 
         const ergo_budget = this.nerfX17();
         this.createScarGen3Upper(customItem);
-        this.createScarGen3Lower(customItem, ergo_budget);
+        this.createScarGen3Lower(customItem);
+        this.createScarGen3Handguard(customItem, ergo_budget);
     }
 
     public nerfX17(): number {
@@ -157,6 +161,60 @@ class Mod implements IPostDBLoadMod
         return slot ?? null;
     }
 
+    public createScarGen3Lower(customItem: any): void {
+        // CREATE ITEM
+        const gen_3_lower_creator: NewItemFromCloneDetails = {
+            itemTplToClone: scarHFDE,
+            overrideProperties: {
+                Name: "FN SCAR-H 7.62x51 assault rifle",
+                ShortName: "Mk17 Gen3",
+                Description: "The FN SCAR-H (Special Operations Forces Combat Assault Rifle - Heavy) assault rifle chambered in 7.62x51 NATO rounds, was adopted by USSOCOM (United States Special Operations Command) as the Mk 17. Features a side-folding polymer stock and a free-floating, cold hammer-forged Mil-Spec barrel with hardchromed bore. Fully-ambidextrous operating controls instantly adapt the SCAR to any user or any shooting position. The receiver-integrated optical rail plus three accessory rails enable mounting of a wide variety of scopes, electronic sights, tactical lights and lasers. Manufactured by Fabrique Nationale Herstal. Comes in black and flat dark earth. Upgraded with the SCAR 17s next generation hydraulically buffered bolt carrier."
+                Prefab: {
+                    "path": "SCAR_H_GEN_3/scar_h_gen_3_upper.bundle",
+                    "rcid": ""
+                },
+            },
+            parentId: genericAssaultRifle,
+            newId: scarHLowerGen3FDE,
+            fleaPriceRoubles: 36000,
+            handbookPriceRoubles: 36000,
+            handbookParentId: "5b5f764186f77447ec5d7714",
+            locales: {
+                en: {
+                name: "FN SCAR-H 7.62x51 assault rifle",
+                shortName: "Mk17 Gen3",
+                description: "The FN SCAR-H (Special Operations Forces Combat Assault Rifle - Heavy) assault rifle chambered in 7.62x51 NATO rounds, was adopted by USSOCOM (United States Special Operations Command) as the Mk 17. Features a side-folding polymer stock and a free-floating, cold hammer-forged Mil-Spec barrel with hardchromed bore. Fully-ambidextrous operating controls instantly adapt the SCAR to any user or any shooting position. The receiver-integrated optical rail plus three accessory rails enable mounting of a wide variety of scopes, electronic sights, tactical lights and lasers. Manufactured by Fabrique Nationale Herstal. Comes in black and flat dark earth. Upgraded with the SCAR 17s next generation hydraulically buffered bolt carrier.",
+                }
+            }
+        };
+        customItem.createItemFromClone(gen_3_lower_creator);
+
+        this.addRecoil(scarHLowerGen3FDE, - 2)
+
+        // TRADER STUFF
+        const traders = this.tables.traders[mechanic];
+        traders.assort.items.push({
+            "_id": tradeScarHLowerGen3FDE,
+            "_tpl": scarHLowerGen3FDE,
+            "parentId": "hideout",
+            "slotId": "hideout",
+            "upd":
+            {
+                "UnlimitedCount": true,
+                "StackObjectsCount": 3
+            }
+        });
+        traders.assort.barter_scheme[tradeScarHLowerGen3FDE] = [
+            [
+                {
+                    "count": 208,
+                    "_tpl": roubles
+                }
+            ]
+        ];
+        traders.assort.loyal_level_items[tradeScarHLowerGen3FDE] = 4;
+    }
+
     public createScarGen3Upper(customItem: any): void {
         // CREATE ITEM
         const gen_3_upper_creator: NewItemFromCloneDetails = {
@@ -164,7 +222,7 @@ class Mod implements IPostDBLoadMod
             overrideProperties: {
                 Name: "SCAR-H Gen 3 upper receiver (FDE)",
                 ShortName: "Mk17 Gen3",
-                Description: "A third generation upper receiver for the SCAR-H assault rifle, manufactured by Fabrique Nationale Herstal. Features a top rail for installation of additional equipment. Comes in black and flat dark earth.",
+                Description: "A next generation upper receiver for the SCAR-H assault rifle, manufactured by Fabrique Nationale Herstal. Features a top rail for installation of additional equipment. Comes in black and flat dark earth.",
                 Prefab: {
                     "path": "SCAR_H_GEN_3/scar_h_gen_3_upper.bundle",
                     "rcid": ""
@@ -179,7 +237,7 @@ class Mod implements IPostDBLoadMod
                 en: {
                 name: "SCAR-H Gen 3 upper receiver (FDE)",
                 shortName: "Mk17 Gen3",
-                description: "A third generation upper receiver for the SCAR-H assault rifle, manufactured by Fabrique Nationale Herstal. Features a top rail for installation of additional equipment. Comes in black and flat dark earth.",
+                description: "A next generation upper receiver for the SCAR-H assault rifle, manufactured by Fabrique Nationale Herstal. Features a top rail for installation of additional equipment. Comes in black and flat dark earth.",
                 }
             }
         };
@@ -222,14 +280,14 @@ class Mod implements IPostDBLoadMod
         traders.assort.loyal_level_items[tradeScarHUpperGen3FDE] = 4;
     }
 
-    public createScarGen3Lower(customItem, ergo_budget: number): void {
+    public createScarGen3Handguard(customItem, ergo_budget: number): void {
         // CREATE ITEM
         const item_creator: NewItemFromCloneDetails = {
             itemTplToClone: scarHMrexFDE,
             overrideProperties: {
                 Name: "SCAR-H Gen 3 IRS (FDE)",
                 ShortName: "Mk17 Gen3",
-                Description: "A third generation integrated rail system, manufactured by Fabrique Nationale Herstal.",
+                Description: "A next generation integrated rail system, manufactured by Fabrique Nationale Herstal.",
                 Prefab: {
                     "path": "SCAR_H_GEN_3/scar_h_gen_3_lower.bundle",
                     "rcid": ""
@@ -244,7 +302,7 @@ class Mod implements IPostDBLoadMod
                 en: {
                 name: "SCAR-H Gen 3 IRS (FDE)",
                 shortName: "Mk17 Gen3",
-                description: "A third generation integrated rail system, manufactured by Fabrique Nationale Herstal.",
+                description: "A next generation integrated rail system, manufactured by Fabrique Nationale Herstal.",
                 }
             }
         };
